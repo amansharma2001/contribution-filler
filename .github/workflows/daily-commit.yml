@@ -1,0 +1,39 @@
+name: Daily Commit
+
+# allow workflow to push changes
+permissions:
+  contents: write
+
+on:
+  schedule:
+    - cron: '0 05 * * *'   # runs daily at 05:00 UTC (adjust if you want)
+  workflow_dispatch:       # allows manual run from Actions tab
+
+jobs:
+  daily-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: true
+
+      - name: Add daily note, commit and push
+        run: |
+          # create folder and file if needed
+          mkdir -p logs
+          # append a small, meaningful line (you can change the content)
+          echo "- $(date -u +'%Y-%m-%d') — Practiced algo / small update" >> logs/daily_log.md
+
+          # set author info — REPLACE below with your info (see notes)
+          git config --local user.email "89450216+amansharma2001@users.noreply.github.com"
+          git config --local user.name "Aman Sharma"
+
+          git add logs/daily_log.md
+          # if nothing changed, exit cleanly
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "chore(daily): update $(date -u +'%Y-%m-%d')"
+          git push
